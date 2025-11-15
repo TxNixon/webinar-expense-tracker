@@ -3,7 +3,7 @@ Expense Tracker Workflow – Webinar
 Repo ini berisi workflow n8n yang kita pakai untuk sesi webinar “Expense Tracker”.
 File JSON di sini bisa kamu import langsung ke n8n, baik lewat URL maupun upload manual.
 
-Video untuk melihat video demo : https://www.loom.com/share/ca3c491932f14555b2f17e16433c5aa5
+Video demo : https://www.loom.com/share/ca3c491932f14555b2f17e16433c5aa5
 ⸻
 
 Isi File
