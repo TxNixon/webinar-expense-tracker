@@ -1,0 +1,1821 @@
+{
+  "name": "Webinar-Expense-Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "chatIds": "-5063551637"
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        -32
+      ],
+      "id": "1ae33e46-73bc-4f15-8829-c2f8a3656a57",
+      "name": "Telegram Trigger",
+      "webhookId": "1859a2f2-1b3d-4768-b28e-7111480bdfa5",
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.photo[$('Telegram Trigger').item.json.message.photo.length - 1].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        416
+      ],
+      "id": "d3786f0f-c8dd-4b0c-9fb5-91024306388b",
+      "name": "Get a file",
+      "webhookId": "28a676c0-8709-427b-baa8-5584f270a4d6",
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2f5ed73e-53a0-40ee-8af1-71c1314989f4",
+                    "leftValue": "={{ $json.message.voice }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice_exist"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4e5cb180-52c5-45da-b4d5-5048700eeb68",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "textOnly_exist"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.caption || $json.message.photo }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "f8076192-9254-4e53-9ba3-342c39e09e2f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image_exist"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        256,
+        -48
+      ],
+      "id": "3aebd572-777e-448f-9fe5-8f45293d3a3e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Baca struk berikut dan buat daftar semua pengeluaran dalam bentuk JSON.\nMasukkan semua baris yang ada nilai rupiahnya, termasuk makanan, pajak, dan service charge.\nGunakan format berikut:\n\n{\n  \"message\": \"Ringkasan total dan daftar item.\",\n  \"summary\": [\n    {\n      \"date\": \"YYYY-MM-DD\",\n      \"id\": \"kode invoice dari struk\",\n      \"name\": \"nama item/pajak/service\",\n      \"qty\": 1,\n      \"price\": 54000,\n      \"category\": \"Food & Beverage\"\n    }\n  ]\n}\n\n\nGunakan kalkulator internal untuk memastikan total harga semua item = grand total di struk.\nJika ada “Service Charge” atau “PB1 10%”, buat mereka sebagai item baru dengan category \"Tax\".\n",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        416
+      ],
+      "id": "922630eb-8f4b-4f74-b478-3b4030e52b14",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        640
+      ],
+      "id": "69e77fd2-3847-4f02-91af-86b3b2d4d3c1",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "frqATk0xZ1KkWE5g",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-image",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        800,
+        640
+      ],
+      "id": "ab4b4107-e97d-458f-876f-9ffcf72ffc55",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "YCmG3vML8MPHb9RU",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        640
+      ],
+      "id": "769cfc06-f606-4089-8495-6c1c4f192167",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"message\": {\n      \"type\": \"string\",\n      \"description\": \"Ringkasan singkat tentang hasil pembacaan struk dan total pengeluaran.\"\n    },\n    \"summary\": {\n      \"type\": \"array\",\n      \"description\": \"Daftar item, termasuk menu, pajak, dan biaya tambahan apa pun.\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"date\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Tanggal transaksi (YYYY-MM-DD).\"\n          },\n          \"id\": {\n            \"type\": \"string\",\n            \"description\": \"Nomor invoice/nota, salin persis dari struk.\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"Nama barang, menu, pajak, atau biaya layanan.\"\n          },\n          \"qty\": {\n            \"type\": \"number\",\n            \"description\": \"Jumlah unit, jika tidak disebut biasanya 1.\"\n          },\n          \"price\": {\n            \"type\": \"number\",\n            \"description\": \"Harga per item (tanpa total tambahan).\"\n          },\n          \"category\": {\n            \"type\": \"string\",\n            \"description\": \"Kategori pengeluaran: Social , Education, Entertainment, Health, Utilities, Transportation, Food & Beverage, Tax, Hobby, Fashion Uncategorized\"\n          }\n        },\n        \"required\": [\"id\", \"name\", \"qty\", \"price\", \"category\"]\n      }\n    }\n  },\n  \"required\": [\"message\", \"summary\"]\n}",
+        "autoFix": true,
+        "customizeRetryPrompt": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1184,
+        640
+      ],
+      "id": "795a8f81-9f81-426a-a4ca-453161836c8a",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        800
+      ],
+      "id": "29949fc2-4095-47f9-bc3b-4692987110a8",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "frqATk0xZ1KkWE5g",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.summary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        416
+      ],
+      "id": "8e3a7b25-6930-43aa-b826-1b5f2a5e527f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "b58388e1-ef1b-4911-af74-d79b23547ea3",
+          "mode": "list",
+          "cachedResultName": "List of Expense Wb",
+          "cachedResultUrl": "https://www.notion.so/b58388e1ef1b4911af74d79b23547ea3"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Date of Transaction|date",
+              "date": "={{ $json.date }}",
+              "timezone": "Asia/Jakarta"
+            },
+            {
+              "key": "Name|title",
+              "title": "={{ $json.name }}"
+            },
+            {
+              "key": "Qty|number",
+              "numberValue": "={{ $json.qty }}"
+            },
+            {
+              "key": "Harga|number",
+              "numberValue": "={{ $json.price }}"
+            },
+            {
+              "key": "Category|select",
+              "selectValue": "={{ $json.category }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        416
+      ],
+      "id": "02792a10-274d-4f29-934b-76bf94552d9d",
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "k6A4fHDzv07gqezQ",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-5063551637",
+        "text": "=✅ Data berhasil dicatat ke Notion!\n\n\n📅 *Tanggal:* {{ new Date($json.data[0].property_date_of_transaction.start).toLocaleDateString(\"id-ID\") }}\n📦 *Total item:* {{ $json.data.length }} item\n\n📘 Semua data sudah tersimpan di Notion.\nTerima kasih — pencatatan otomatis selesai 🎉",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Klik disini untuk melihat",
+                    "additionalFields": {
+                      "url": "={{ $json.data[0].url }}"
+                    }
+                  },
+                  {
+                    "text": "Dashboard",
+                    "additionalFields": {
+                      "url": "https://www.notion.so/Expense-Dashboard-28734bb281a98057a2eddc40948e7f87?source=copy_link"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2016,
+        416
+      ],
+      "id": "010a58a7-276e-49b8-831d-7da060f1279b",
+      "name": "Send a text message",
+      "webhookId": "151e17b0-05d0-48e9-9493-f8fb918c76aa",
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        416
+      ],
+      "id": "3c008e9b-020d-48a3-ac64-209b2bd27fd2",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Kamu adalah AI Agent yang bertugas mencatat pengeluaran dari pesan teks user secara otomatis.\n\nTugasmu:\n1. Pahami pesan user tentang pengeluaran atau pembelian barang/jasa.\n2. Ekstrak informasi penting sesuai field database Notion berikut:\n   - name → nama pengeluaran\n   - total_amount → jumlah pengeluaran (dalam angka)\n   - qty → jumlah barang (gunakan 1 jika tidak disebutkan)\n   - date → tanggal transaksi\n   - category → Category\n3. Gunakan tool yang tersedia untuk menyimpan data hasil ekstraksi ke database Notion.\n\nAturan penting:\n- Jika user tidak menyebut tanggal, gunakan hasil dari tool “Today's Date”.\n- Jika harga disebut dalam format seperti “10rb” atau “5 ribu”, ubah menjadi angka penuh (contoh: 10rb → 10000).\n- Jika ada lebih dari satu item dalam satu pesan, buat entri terpisah.\n- Jika kategori tidak disebut, tentukan kategori yang paling sesuai berdasarkan konteks pengeluaran.\n\n\nKeluarkan juga di output url notion db nya"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        928,
+        -192
+      ],
+      "id": "84d06e5b-0979-4dd8-a0b3-54a70f3630c3",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        704,
+        128
+      ],
+      "id": "d1e8e3fa-a541-4323-b048-b4b8503c9037",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "YCmG3vML8MPHb9RU",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        128
+      ],
+      "id": "5f215799-5f2e-41e5-9632-f35da0f36dba",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        720,
+        -784
+      ],
+      "id": "1c81d4d9-6833-45c6-9493-838f302088ac",
+      "name": "Transcribe a recording",
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "frqATk0xZ1KkWE5g",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "Merubah file record menjadi text"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Transcribe a recording').item.json.text }}",
+        "options": {
+          "systemMessage": "=kamu adalah helpful agent\n \nTugasmu adalah mencatat pengeluaran dari user dengan menggunakan tools notion yang tersedia\npastikan kamu proses dulu text yang masuk samakan dengan field yang dibutuhkan oleh notion database\n\n\nketika akan menggunakan tools add to database di notion maka sebutkan pengeluaran ini termasuk dalam kategori dari pilihan ari berikut ini : Kategori pengeluaran: Social , Education, Entertainment, Health, Utilities, Transportation, Food & Beverage, Tax, Hobby, Fashion, Uncategorized\n\n\nlimit output nya menjadi 250 huruf saja\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        -784
+      ],
+      "id": "7bd16434-dd23-41a9-aa99-f05918155835",
+      "name": "AI Agent2",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1088,
+        -560
+      ],
+      "id": "29c643d7-54aa-40d5-bc0e-8833d7c0d454",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "frqATk0xZ1KkWE5g",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1248,
+        -560
+      ],
+      "id": "1109b084-da9e-454e-a102-b8ab2eb14854",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "b58388e1-ef1b-4911-af74-d79b23547ea3",
+          "mode": "list",
+          "cachedResultName": "List of Expense Wb",
+          "cachedResultUrl": "https://www.notion.so/b58388e1ef1b4911af74d79b23547ea3"
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        1632,
+        -592
+      ],
+      "id": "a93aa8a9-0d93-4950-9e34-8f0a28f5bad2",
+      "name": "Get many database pages in Notion1",
+      "credentials": {
+        "notionApi": {
+          "id": "k6A4fHDzv07gqezQ",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "b58388e1-ef1b-4911-af74-d79b23547ea3",
+          "mode": "list",
+          "cachedResultName": "List of Expense Wb",
+          "cachedResultUrl": "https://www.notion.so/b58388e1ef1b4911af74d79b23547ea3"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Name|title",
+              "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('propertyValues0_Title', ``, 'string') }}"
+            },
+            {
+              "key": "Harga|number",
+              "numberValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('propertyValues1_Number', ``, 'number') }}"
+            },
+            {
+              "key": "Qty|number",
+              "numberValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('propertyValues2_Number', `Jika user tidak bilang berapa qty nya , maka anggap jadi 1 `, 'number') }}"
+            },
+            {
+              "key": "Date of Transaction|date",
+              "includeTime": false,
+              "date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('propertyValues3_Date', `if the user dont said the date just use today's date`, 'string') }}",
+              "timezone": "Asia/Jakarta"
+            },
+            {
+              "key": "Category|select",
+              "selectValue": "={{ $json.output[0].content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        1504,
+        -560
+      ],
+      "id": "5e2591cc-7543-4084-bdd2-d859fb6debd3",
+      "name": "Create a database page in Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "k6A4fHDzv07gqezQ",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst today = new Date();\n\n\nconst formatted = today.toISOString().split('T')[0];\n\n\nreturn formatted;"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        1360,
+        -560
+      ],
+      "id": "f0538a12-11b5-4856-955f-e66627ae5717",
+      "name": "Today's Date"
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "voice": {
+          "__rl": true,
+          "value": "21m00Tcm4TlvDq8ikWAM",
+          "mode": "list",
+          "cachedResultName": "Rachel"
+        },
+        "text": "={{ $json.output }}",
+        "additionalOptions": {
+          "languageCode": "id-ID"
+        },
+        "requestOptions": {}
+      },
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        1616,
+        -784
+      ],
+      "id": "ae1d7ea1-cd59-462f-99a1-731d2e76f300",
+      "name": "Convert text to speech",
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "35KqimdMboQiNb8h",
+          "name": "ElevenLabs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "-5063551637",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1808,
+        -784
+      ],
+      "id": "0cf0c683-22f3-40a1-aa2c-f3dff6301987",
+      "name": "Send an audio file",
+      "webhookId": "384142e3-cf0b-4e9b-a515-51a755b407c7",
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "-5063551637"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        -192
+      ],
+      "id": "3053a785-1241-4e99-8db7-37610fbc2e1a",
+      "name": "Send a chat action",
+      "webhookId": "1dbb9a7b-bc04-4d0a-96ef-586700689824",
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"message\": {\n      \"type\": \"string\",\n      \"description\": \"Ringkasan singkat tentang hasil pembacaan struk dan total pengeluaran.\"\n    },\n    \"summary\": {\n      \"type\": \"array\",\n      \"description\": \"Daftar item, termasuk menu, pajak, dan biaya tambahan apa pun.\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"date\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Tanggal transaksi (YYYY-MM-DD).\"\n          },\n          \"id\": {\n            \"type\": \"string\",\n            \"description\": \"Nomor invoice/nota, salin persis dari struk.\"\n          },\n          \"name\": {\n            \"type\": \"string\",\n            \"description\": \"Nama barang, menu, pajak, atau biaya layanan.\"\n          },\n          \"qty\": {\n            \"type\": \"number\",\n            \"description\": \"Jumlah unit, jika tidak disebut biasanya 1.\"\n          },\n          \"price\": {\n            \"type\": \"number\",\n            \"description\": \"Harga per item (tanpa total tambahan).\"\n          },\n          \"category\": {\n            \"type\": \"string\",\n            \"description\": \"Kategori pengeluaran: Social , Education, Entertainment, Health, Utilities, Transportation, Food & Beverage, Tax, Hobby, Fashion, Uncategorized\"\n          }\n        },\n        \"required\": [\"id\", \"name\", \"qty\", \"price\", \"category\"]\n      }\n    }\n  },\n  \"required\": [\"message\", \"summary\"]\n}",
+        "autoFix": true,
+        "customizeRetryPrompt": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "85710af1-efbe-4b8a-872b-8be4e981065a",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        160
+      ],
+      "id": "e258dc70-6df6-4ca1-a84c-6433e1be712e",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "frqATk0xZ1KkWE5g",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.summary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -192
+      ],
+      "id": "2d3fad4d-41a9-4e25-8eb2-6eceb325df98",
+      "name": "Split Out1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2480,
+        -320
+      ],
+      "id": "0985504f-04b6-46ce-b61a-568ef5dcd54a",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "chatId": "-5063551637",
+        "text": "=✅ Data berhasil dicatat ke Notion!\n\n📅 *Tanggal:* {{\n  (() => {\n    const raw = $json.data?.[0]?.property_date_of_transaction?.start;\n    if (!raw) return '-';\n    const d = new Date(raw);\n    const hari = d.toLocaleDateString('id-ID', { weekday: 'long' });\n    const tgl  = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });\n    return `${hari}, ${tgl}`;\n  })()\n}}\n📦 *Total item:* {{ Array.isArray($json.data) ? $json.data.length : 0 }} item\n\n📘 Semua data sudah tersimpan di Notion.\nTerima kasih — pencatatan otomatis selesai 🎉",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Klik disini untuk melihat",
+                    "additionalFields": {
+                      "url": "={{ $json.data[0].url }}"
+                    }
+                  },
+                  {
+                    "text": "Link Database",
+                    "additionalFields": {
+                      "url": "https://www.notion.so/b58388e1ef1b4911af74d79b23547ea3?v=29d34bb281a9805fb3bf000cd2e10a41&source=copy_link"
+                    }
+                  },
+                  {
+                    "text": "Dashboard",
+                    "additionalFields": {
+                      "url": "https://www.notion.so/Expense-Dashboard-28734bb281a98057a2eddc40948e7f87?source=copy_link"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2768,
+        -320
+      ],
+      "id": "59f7b629-9813-4d0e-8ddf-26a5804db4b6",
+      "name": "Send a text message3",
+      "webhookId": "151e17b0-05d0-48e9-9493-f8fb918c76aa",
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1552,
+        48
+      ],
+      "id": "eb0490b9-0214-4c93-84d5-cb0afbc646ca",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "frqATk0xZ1KkWE5g",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "You are an intent detector for an expense tracker chatbot.\nReturn ONLY JSON in this exact format:\n{\"intent\":\"create\"} or {\"intent\":\"query\"} or {\"intent\":\"other\"}\n\nDefinitions:\n- create → the user wants to record/add an expense (e.g. \"catat bensin 50 ribu\", \"beli makan 25rb\")\n- query → the user is asking to see or summarize expenses (e.g. \"hari ini belanja apa aja?\", \"berapa total bulan ini?\")\n- other → greetings, jokes, or irrelevant messages.\n\nDo not add explanations or extra text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1552,
+        -192
+      ],
+      "id": "9d23e3cb-c588-4411-9f8f-5874e5baa943",
+      "name": "Intent Detector",
+      "notes": "Kirim data jika memang user minta dicatat pengeluaran nya\nJika tidak hanya return percakapan biasa\n"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e0185b14-73e1-4ed3-ace0-c2a65db0a971",
+              "leftValue": "={{ JSON.parse($json.output).intent }}",
+              "rightValue": "create",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1904,
+        -192
+      ],
+      "id": "89f7f534-ddba-4a8b-904b-287c3bd1b627",
+      "name": "If",
+      "notesInFlow": true,
+      "notes": "Jika intent nya adalah create pengeluaran"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        144
+      ],
+      "id": "ddd7eeae-41a9-4971-b701-9f598e63404a",
+      "name": "Calculator1"
+    },
+    {
+      "parameters": {
+        "chatId": "-5063551637",
+        "text": "={{ $('AI Agent1').item.json.output.message }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Link Database",
+                    "additionalFields": {
+                      "url": "https://www.notion.so/b58388e1ef1b4911af74d79b23547ea3?v=29d34bb281a9805fb3bf000cd2e10a41&source=copy_link"
+                    }
+                  },
+                  {
+                    "text": "Dashboard",
+                    "additionalFields": {
+                      "url": "https://www.notion.so/Expense-Dashboard-28734bb281a98057a2eddc40948e7f87?source=copy_link"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2496,
+        -64
+      ],
+      "id": "0c77d59d-644f-418f-92c8-ca907a64a4f8",
+      "name": "Send a text message4",
+      "webhookId": "151e17b0-05d0-48e9-9493-f8fb918c76aa",
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $('AI Agent1').item.json.output.message }}",
+        "include": "specifiedFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        -64
+      ],
+      "id": "a092cf8e-10ae-4f56-b95b-19f8e99c3659",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "b58388e1-ef1b-4911-af74-d79b23547ea3",
+          "mode": "list",
+          "cachedResultName": "List of Expense Wb",
+          "cachedResultUrl": "https://www.notion.so/b58388e1ef1b4911af74d79b23547ea3"
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        144
+      ],
+      "id": "37c3ecc5-5fb4-45f5-af1d-7a6113242529",
+      "name": "Get many database pages in Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "k6A4fHDzv07gqezQ",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "b58388e1-ef1b-4911-af74-d79b23547ea3",
+          "mode": "list",
+          "cachedResultName": "List of Expense Wb",
+          "cachedResultUrl": "https://www.notion.so/b58388e1ef1b4911af74d79b23547ea3"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Date of Transaction|date",
+              "date": "={{ $('AI Agent1').item.json.output.summary[0].date }}",
+              "timezone": "Asia/Jakarta"
+            },
+            {
+              "key": "Name|title",
+              "title": "={{ $('Split Out1').item.json.name }}"
+            },
+            {
+              "key": "Qty|number",
+              "numberValue": "={{ $('Split Out1').item.json.qty }}"
+            },
+            {
+              "key": "Harga|number",
+              "numberValue": "={{ $('Split Out1').item.json.price }}"
+            },
+            {
+              "key": "Category|select",
+              "selectValue": "={{ $('Split Out1').item.json.category }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2240,
+        -320
+      ],
+      "id": "9fad569b-d504-4654-8cbb-03434c420838",
+      "name": "Catat Pengeluaran",
+      "credentials": {
+        "notionApi": {
+          "id": "k6A4fHDzv07gqezQ",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "={{ $json.text }}"
+            },
+            {
+              "role": "system",
+              "content": "=Tentukan dari user ini termasuk dalam kategori pengeluaran apa ?\n\nSocial , Education, Entertainment, Health, Utilities, Transportation, Food & Beverage, Tax, Hobby, Fashion, Uncategorized\n\nhanya keluarkan hasilnya saja tanpa markdown"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -784
+      ],
+      "id": "dc56c9f0-5fb8-4664-90ff-ae75f29d4392",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "frqATk0xZ1KkWE5g",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        -784
+      ],
+      "id": "00aa1410-d647-4dd2-a311-515df2946de0",
+      "name": "Download Rekaman",
+      "webhookId": "4d3d0968-7432-4b93-bc27-1e512bd89a0a",
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      },
+      "notes": "Download rekaman voice note"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "-5063551637"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        416
+      ],
+      "id": "46e20986-eb3f-4223-9f91-813dbe3e5da4",
+      "name": "Lihat typing action",
+      "webhookId": "1dbb9a7b-bc04-4d0a-96ef-586700689824",
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      },
+      "notes": "Typing action"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "id": "b1f22945-1676-4c37-89da-ca883c09b910",
+      "name": "Schedule Trigger | for send chart report",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        272,
+        1216
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "b58388e1-ef1b-4911-af74-d79b23547ea3",
+          "mode": "list",
+          "cachedResultName": "List of Expense Wb",
+          "cachedResultUrl": "https://www.notion.so/b58388e1ef1b4911af74d79b23547ea3"
+        },
+        "returnAll": true,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Date of Transaction|date",
+              "condition": "past_month"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "67ef1d16-d482-4193-ba98-c8eefd6e997a",
+      "name": "Get Recent Data from Notions",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        528,
+        1216
+      ],
+      "typeVersion": 2.2,
+      "credentials": {
+        "notionApi": {
+          "id": "k6A4fHDzv07gqezQ",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "sum",
+              "field": "property_total_amount"
+            }
+          ]
+        },
+        "fieldsToSplitBy": "property_category",
+        "options": {}
+      },
+      "id": "2517f380-4b4e-4670-8d35-7a503bc66f7b",
+      "name": "Summarize Transaction Data",
+      "type": "n8n-nodes-base.summarize",
+      "position": [
+        800,
+        1216
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "labelsMode": "array",
+        "labelsArray": "={{ $json.chart.data.labels }}",
+        "data": "={{ $json.chart.data.datasets[0].data }}",
+        "chartOptions": {},
+        "datasetOptions": {}
+      },
+      "id": "2a0a5fc7-6349-4441-9b5f-8db0bb12a37f",
+      "name": "Generate Chart",
+      "type": "n8n-nodes-base.quickChart",
+      "position": [
+        1328,
+        1216
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "1383191783",
+        "binaryData": true,
+        "binaryPropertyName": "=data",
+        "additionalFields": {
+          "fileName": "chart.jpeg"
+        }
+      },
+      "id": "a7380b74-86b6-4849-9d4d-5ca75045ff81",
+      "name": "Send Chart Image to Group or Private Chat",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1616,
+        1216
+      ],
+      "webhookId": "66cce6e1-819c-487b-b8ad-3f02aebd40cb",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "FaWithPXFiVOp36t",
+          "name": "Telegram SL Sby"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const labels = [];\nconst values = [];\n\nfor (const item of items) {\n  labels.push(item.json.property_category);\n  values.push(item.json.sum_property_total_amount);\n}\n\nreturn [\n  {\n    json: {\n      chart: {\n        type: 'bar',\n        data: {\n          labels,\n          datasets: [\n            {\n              label: 'Spending by Category',\n              data: values,\n              backgroundColor: 'rgba(54, 162, 235, 0.6)',\n              borderColor: 'rgba(54, 162, 235, 1)',\n              borderWidth: 1\n            }\n          ]\n        },\n        options: {\n          plugins: {\n            title: {\n              display: true,\n              text: 'Spending Summary by Category'\n            }\n          },\n          scales: {\n            y: {\n              beginAtZero: true\n            }\n          }\n        }\n      }\n    }\n  }\n];"
+      },
+      "id": "67eb5646-9b5e-45bb-99f4-09f124acc2e9",
+      "name": "Convert Data to JSON chart payload",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1040,
+        1216
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## Kirim Summary berupa chart",
+        "height": 432,
+        "width": 1696
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        192,
+        1040
+      ],
+      "typeVersion": 1,
+      "id": "cc6365b6-72cf-4f59-a117-eb7d1ec7ff29",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "options": {
+          "timezone": "Asia/Jakarta"
+        }
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        960,
+        160
+      ],
+      "id": "3e59d6ad-61ff-4b52-a90f-9e33d0c472c5",
+      "name": "Date & Time"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Download Rekaman",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a chat action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lihat typing action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Convert text to speech",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many database pages in Notion1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page in Notion": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Today's Date": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert text to speech": {
+      "main": [
+        [
+          {
+            "node": "Send an audio file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Intent Detector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Intent Detector",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intent Detector": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Catat Pengeluaran",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many database pages in Notion": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Pengeluaran": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an audio file": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Rekaman": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lihat typing action": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger | for send chart report": {
+      "main": [
+        [
+          {
+            "node": "Get Recent Data from Notions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent Data from Notions": {
+      "main": [
+        [
+          {
+            "node": "Summarize Transaction Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Transaction Data": {
+      "main": [
+        [
+          {
+            "node": "Convert Data to JSON chart payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Chart": {
+      "main": [
+        [
+          {
+            "node": "Send Chart Image to Group or Private Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Data to JSON chart payload": {
+      "main": [
+        [
+          {
+            "node": "Generate Chart",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a31080ee-0241-484d-b525-a29b514feb41",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c43101646b7fe0a3ae8c7aa572c6d2f7d81df40e7e07d38f04f3aa5715278880"
+  },
+  "id": "s3rWQpCOSlFUHeeb",
+  "tags": [
+    {
+      "updatedAt": "2025-10-11T02:04:23.387Z",
+      "createdAt": "2025-10-11T02:04:23.387Z",
+      "id": "aodVA01GBaNp0g4z",
+      "name": "Webinar"
+    }
+  ]
+}
