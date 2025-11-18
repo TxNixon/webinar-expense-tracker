@@ -36,7 +36,5 @@ Import lewat File
 Tujuan Workflow
 
 Workflow ini dibuat untuk latihan dasar:
-	•	Cara bikin data dummy untuk testing
-	•	Cara format data supaya siap dipakai
-	•	Cara kirim data ke Notion lewat n8n
+	•	Cara kirim data ke Notion lewat telegram
 	•	Cara membangun alur sederhana untuk pencatatan pengeluaran
